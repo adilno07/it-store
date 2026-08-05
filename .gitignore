@@ -1,0 +1,14 @@
+# Angular
+it-store-frontend/node_modules/
+it-store-frontend/dist/
+it-store-frontend/.angular/
+
+# Spring Boot
+it-store-backend/target/
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log

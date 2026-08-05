@@ -1,0 +1,23 @@
+<div class="d-flex">
+  <!-- Sidebar -->
+  <div class="sidebar bg-dark text-white p-3" style="width: 250px; min-height: 100vh">
+    <h4 class="mb-4">IT Store Admin</h4>
+
+    <nav class="nav flex-column gap-1">
+      <a class="nav-link text-white" routerLink="/products" routerLinkActive="active-link">
+        📦 Produits
+      </a>
+      <a class="nav-link text-white" routerLink="/categories" routerLinkActive="active-link">
+        🏷️ Catégories
+      </a>
+      <a class="nav-link text-white" routerLink="/brands" routerLinkActive="active-link">
+        🏭 Marques
+      </a>
+    </nav>
+  </div>
+
+  <!-- Contenu -->
+  <div class="flex-grow-1">
+    <router-outlet></router-outlet>
+  </div>
+</div>
