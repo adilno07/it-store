@@ -6,29 +6,26 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "products")
+@Table(name = "app_users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    @Column(unique = true)
+    private String email;
 
-    private String description;
+    private String password;
 
-    private Double price;
+    private String firstName;
 
-    private Integer quantity;
-
-    @ManyToOne
-    @JoinColumn(name = "brand_id")
-    private Brand brand;
+    private String lastName;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "role_id")
+    private Role role;
 }
