@@ -1,0 +1,136 @@
+<div class="container py-4">
+  <h1 class="mb-4 text-primary fw-bold">Gestion du stock</h1>
+
+  <!-- Résumé / Filtres rapides -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <button
+        class="btn w-100 text-start"
+        [class.btn-primary]="activeFilter === 'all'"
+        [class.btn-outline-primary]="activeFilter !== 'all'"
+        (click)="setFilter('all')"
+      >
+        Tous les produits
+        <span class="badge bg-light text-dark float-end">{{ products.length }}</span>
+      </button>
+    </div>
+    <div class="col-md-3">
+      <button
+        class="btn w-100 text-start"
+        [class.btn-danger]="activeFilter === 'outOfStock'"
+        [class.btn-outline-danger]="activeFilter !== 'outOfStock'"
+        (click)="setFilter('outOfStock')"
+      >
+        En rupture
+        <span class="badge bg-light text-dark float-end">{{ outOfStockCount }}</span>
+      </button>
+    </div>
+    <div class="col-md-3">
+      <button
+        class="btn w-100 text-start"
+        [class.btn-warning]="activeFilter === 'low'"
+        [class.btn-outline-warning]="activeFilter !== 'low'"
+        (click)="setFilter('low')"
+      >
+        Stock faible
+        <span class="badge bg-light text-dark float-end">{{ lowStockCount }}</span>
+      </button>
+    </div>
+    <div class="col-md-3">
+      <button
+        class="btn w-100 text-start"
+        [class.btn-success]="activeFilter === 'ok'"
+        [class.btn-outline-success]="activeFilter !== 'ok'"
+        (click)="setFilter('ok')"
+      >
+        Stock normal
+        <span class="badge bg-light text-dark float-end">{{
+          products.length - outOfStockCount - lowStockCount
+        }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Marque</th>
+            <th>Catégorie</th>
+            <th>Prix</th>
+            <th>Stock</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of filteredProducts; track product.id) {
+            <tr>
+              <td>{{ product.id }}</td>
+              <td class="fw-semibold">{{ product.name }}</td>
+              <td>
+                @if (product.brand) {
+                  <span class="badge bg-secondary">{{ product.brand.name }}</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td>
+                @if (product.category) {
+                  <span class="badge bg-info text-dark">{{ product.category.name }}</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td>{{ product.price }} DH</td>
+              <td>
+                @if (editingId === product.id) {
+                  <input
+                    type="number"
+                    class="form-control form-control-sm d-inline-block"
+                    style="width: 90px"
+                    [(ngModel)]="editingQuantity"
+                    name="editQty-{{ product.id }}"
+                    min="0"
+                  />
+                } @else {
+                  @if (product.quantity === 0) {
+                    <span class="badge bg-danger">Rupture</span>
+                  } @else if (product.quantity <= 5) {
+                    <span class="badge bg-warning text-dark">{{ product.quantity }} (faible)</span>
+                  } @else {
+                    <span class="badge bg-success">{{ product.quantity }}</span>
+                  }
+                }
+              </td>
+              <td class="text-end">
+                @if (editingId === product.id) {
+                  <button class="btn btn-sm btn-primary me-2" (click)="saveQuantity(product)">
+                    Valider
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditQuantity()">
+                    Annuler
+                  </button>
+                } @else {
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="startEditQuantity(product)"
+                  >
+                    Ajuster stock
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (filteredProducts.length === 0) {
+        <p class="text-muted text-center py-3 mb-0">Aucun produit dans cette catégorie de stock.</p>
+      }
+    </div>
+  </div>
+</div>

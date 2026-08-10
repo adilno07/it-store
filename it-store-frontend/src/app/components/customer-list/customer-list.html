@@ -1,0 +1,175 @@
+<div class="container py-4">
+  <h1 class="mb-4 text-primary fw-bold">Gestion des clients</h1>
+
+  <!-- Formulaire -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      @if (editingCustomer) {
+        <h5 class="card-title mb-3">Modifier le client</h5>
+        <form (ngSubmit)="updateCustomer()">
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label">Prénom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="editingCustomer.firstName"
+                name="editFirstName"
+                required
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Nom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="editingCustomer.lastName"
+                name="editLastName"
+                required
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Téléphone</label>
+              <input
+                type="tel"
+                class="form-control"
+                [(ngModel)]="editingCustomer.phone"
+                name="editPhone"
+                required
+                pattern="^(0[5-7][0-9]{8}|\+212[5-7][0-9]{8})$"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                [(ngModel)]="editingCustomer.email"
+                name="editEmail"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Adresse</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="editingCustomer.address"
+                name="editAddress"
+              />
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+              <button type="submit" class="btn btn-primary">Enregistrer</button>
+              <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()">
+                Annuler
+              </button>
+            </div>
+          </div>
+        </form>
+      } @else {
+        <h5 class="card-title mb-3">Ajouter un client</h5>
+        <form (ngSubmit)="createCustomer()">
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label">Prénom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newCustomer.firstName"
+                name="firstName"
+                required
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Nom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newCustomer.lastName"
+                name="lastName"
+                required
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Téléphone</label>
+              <input
+                type="tel"
+                class="form-control"
+                [(ngModel)]="newCustomer.phone"
+                name="phone"
+                required
+                pattern="^(0[5-7][0-9]{8}|\+212[5-7][0-9]{8})$"
+                placeholder="0612345678"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                [(ngModel)]="newCustomer.email"
+                name="email"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Adresse</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newCustomer.address"
+                name="address"
+              />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-success w-100">+ Créer</button>
+            </div>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Liste des clients</h5>
+
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Prénom</th>
+            <th>Nom</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Adresse</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (customer of customers; track customer.id) {
+            <tr>
+              <td>{{ customer.id }}</td>
+              <td class="fw-semibold">{{ customer.firstName }}</td>
+              <td>{{ customer.lastName }}</td>
+              <td>{{ customer.phone }}</td>
+              <td class="text-muted">{{ customer.email }}</td>
+              <td class="text-muted">{{ customer.address }}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(customer)">
+                  Modifier
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteCustomer(customer.id)">
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (customers.length === 0) {
+        <p class="text-muted text-center py-3 mb-0">Aucun client pour le moment.</p>
+      }
+    </div>
+  </div>
+</div>
