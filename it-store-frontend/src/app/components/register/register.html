@@ -1,0 +1,155 @@
+<div class="container py-4">
+  <h1 class="mb-4 text-primary fw-bold">Gestion des utilisateurs</h1>
+
+  <!-- Formulaire de création OU modification -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      @if (editingUser) {
+        <h5 class="card-title mb-3">Modifier l'utilisateur</h5>
+        <form (ngSubmit)="updateUser()">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Prénom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="editingUser.firstName"
+                name="editFirstName"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Nom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="editingUser.lastName"
+                name="editLastName"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Rôle</label>
+              <select class="form-select" [(ngModel)]="editingUser.role" name="editRole">
+                <option value="EMPLOYEE">Employé</option>
+                <option value="ADMIN">Administrateur</option>
+              </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+              <button type="submit" class="btn btn-primary">Enregistrer</button>
+              <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()">
+                Annuler
+              </button>
+            </div>
+          </div>
+        </form>
+      } @else {
+        <h5 class="card-title mb-3">Ajouter un utilisateur</h5>
+        <form (ngSubmit)="onSubmit()">
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label">Prénom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="firstName"
+                name="firstName"
+                required
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Nom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="lastName"
+                name="lastName"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" [(ngModel)]="email" name="email" required />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Mot de passe</label>
+              <input
+                type="password"
+                class="form-control"
+                [(ngModel)]="password"
+                name="password"
+                required
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Rôle</label>
+              <select class="form-select" [(ngModel)]="role" name="role">
+                <option value="EMPLOYEE">Employé</option>
+                <option value="ADMIN">Administrateur</option>
+              </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+              <button type="submit" class="btn btn-success w-100">+</button>
+            </div>
+          </div>
+
+          @if (errorMessage) {
+            <div class="alert alert-danger mt-3 py-2">{{ errorMessage }}</div>
+          }
+          @if (successMessage) {
+            <div class="alert alert-success mt-3 py-2">{{ successMessage }}</div>
+          }
+        </form>
+      }
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Liste des utilisateurs</h5>
+
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Prénom</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user.id) {
+            <tr>
+              <td>{{ user.id }}</td>
+              <td class="fw-semibold">{{ user.firstName }}</td>
+              <td>{{ user.lastName }}</td>
+              <td class="text-muted">{{ user.email }}</td>
+              <td>
+                @if (user.role === 'ADMIN') {
+                  <span class="badge bg-danger">Admin</span>
+                } @else {
+                  <span class="badge bg-secondary">Employé</span>
+                }
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(user)">
+                  Modifier
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteUser(user.id)">
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (users.length === 0) {
+        <p class="text-muted text-center py-3 mb-0">Aucun utilisateur pour le moment.</p>
+      }
+    </div>
+  </div>
+</div>

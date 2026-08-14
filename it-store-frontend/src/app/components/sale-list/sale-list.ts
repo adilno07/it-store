@@ -34,6 +34,8 @@ interface SaleView {
   customer: Customer | null;
   saleDate: string;
   total: number;
+  source: string;
+  status: string;
   items: SaleItemView[];
 }
 
@@ -86,6 +88,41 @@ export class SaleList implements OnInit {
     this.http.get<SaleView[]>(this.salesUrl).subscribe((data) => {
       this.sales = data.sort((a, b) => b.id - a.id);
       this.cdr.markForCheck();
+    });
+  }
+
+  get pendingOrders(): SaleView[] {
+    return this.sales.filter((s) => s.status === 'PENDING');
+  }
+
+  get confirmedSales(): SaleView[] {
+    return this.sales.filter((s) => s.status !== 'PENDING');
+  }
+
+  confirmOrder(id: number) {
+    if (!confirm('Confirmer cette commande ? Le stock sera déduit.')) return;
+
+    this.http.put<SaleView>(`${this.salesUrl}/${id}/confirm`, {}).subscribe({
+      next: () => {
+        this.loadSales();
+        this.loadProducts();
+      },
+      error: (err) => {
+        alert(err.error || 'Erreur lors de la confirmation.');
+      },
+    });
+  }
+
+  cancelOrder(id: number) {
+    if (!confirm('Annuler cette commande ?')) return;
+
+    this.http.put<SaleView>(`${this.salesUrl}/${id}/cancel`, {}).subscribe({
+      next: () => {
+        this.loadSales();
+      },
+      error: (err) => {
+        alert(err.error || "Erreur lors de l'annulation.");
+      },
     });
   }
 

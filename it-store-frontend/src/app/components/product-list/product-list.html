@@ -63,6 +63,27 @@
                 Annuler
               </button>
             </div>
+            <div class="col-md-4">
+              <label class="form-label">Photo</label>
+              <input
+                type="file"
+                class="form-control"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onFileSelected($event, 'edit')"
+              />
+              @if (uploading) {
+                <small class="text-muted">Envoi en cours...</small>
+              }
+            </div>
+            @if (editingProduct.imageUrl) {
+              <div class="col-md-2">
+                <img
+                  [src]="baseUrl + editingProduct.imageUrl"
+                  class="img-thumbnail"
+                  style="height: 80px"
+                />
+              </div>
+            }
           </div>
         </form>
       } @else {
@@ -122,6 +143,27 @@
             <div class="col-md-2 d-flex align-items-end">
               <button type="submit" class="btn btn-success w-100">+ Créer</button>
             </div>
+            <div class="col-md-4">
+              <label class="form-label">Photo</label>
+              <input
+                type="file"
+                class="form-control"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onFileSelected($event, 'new')"
+              />
+              @if (uploading) {
+                <small class="text-muted">Envoi en cours...</small>
+              }
+            </div>
+            @if (newProduct.imageUrl) {
+              <div class="col-md-2">
+                <img
+                  [src]="baseUrl + newProduct.imageUrl"
+                  class="img-thumbnail"
+                  style="height: 80px"
+                />
+              </div>
+            }
           </div>
         </form>
       }
@@ -214,6 +256,7 @@
       <table class="table table-hover align-middle">
         <thead class="table-light">
           <tr>
+            <th>Photo</th>
             <th>ID</th>
             <th>Nom</th>
             <th>Description</th>
@@ -226,6 +269,17 @@
         <tbody>
           @for (product of products; track product.id) {
             <tr>
+              <td>
+                @if (product.imageUrl) {
+                  <img
+                    [src]="baseUrl + product.imageUrl"
+                    style="width: 50px; height: 50px; object-fit: cover"
+                    class="rounded"
+                  />
+                } @else {
+                  <span class="text-muted small">—</span>
+                }
+              </td>
               <td>{{ product.id }}</td>
               <td class="fw-semibold">{{ product.name }}</td>
               <td class="text-muted">{{ product.description }}</td>

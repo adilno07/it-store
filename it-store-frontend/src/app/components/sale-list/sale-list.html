@@ -1,4 +1,47 @@
 <div class="container py-4">
+  @if (pendingOrders.length > 0) {
+    <div class="alert alert-warning shadow-sm mb-4">
+      <h5 class="mb-3">🕒 Commandes en attente ({{ pendingOrders.length }})</h5>
+      @for (order of pendingOrders; track order.id) {
+        <div class="card mb-2">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <span class="fw-semibold">
+                  @if (order.customer) {
+                    {{ order.customer.firstName }} {{ order.customer.lastName }} ({{
+                      order.customer.phone
+                    }})
+                  }
+                </span>
+                <span class="badge bg-info text-dark ms-2">{{ order.source }}</span>
+                <div class="text-muted small mt-1">
+                  {{ order.saleDate | date: 'dd/MM/yyyy HH:mm' }}
+                </div>
+                <ul class="mb-0 mt-1 small">
+                  @for (item of order.items; track item.id) {
+                    <li>
+                      {{ item.quantity }} × {{ item.product.name }} ({{ item.unitPrice }} DH/u)
+                    </li>
+                  }
+                </ul>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold mb-2">{{ order.total }} DH</div>
+                <button class="btn btn-sm btn-success me-2" (click)="confirmOrder(order.id)">
+                  ✓ Confirmer
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="cancelOrder(order.id)">
+                  ✕ Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
   <h1 class="mb-4 text-primary fw-bold">Point de vente</h1>
 
   <div class="row g-4">
@@ -104,11 +147,11 @@
         <div class="card-body">
           <h5 class="card-title mb-3">Historique des ventes</h5>
 
-          @if (sales.length === 0) {
+          @if (confirmedSales.length === 0) {
             <p class="text-muted text-center py-3 mb-0">Aucune vente pour le moment.</p>
           }
 
-          @for (sale of sales; track sale.id) {
+          @for (sale of confirmedSales; track sale.id) {
             <div class="border rounded p-3 mb-2">
               <div class="d-flex justify-content-between">
                 <span class="fw-semibold">

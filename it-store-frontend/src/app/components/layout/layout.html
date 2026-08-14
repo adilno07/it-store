@@ -22,7 +22,20 @@
       <a class="nav-link text-white" routerLink="/sales" routerLinkActive="active-link">
         🛒 Ventes
       </a>
+
+      @if (authService.isAdmin()) {
+        <a class="nav-link text-white" routerLink="/register" routerLinkActive="active-link">
+          👥 Utilisateurs
+        </a>
+      }
     </nav>
+
+    <div class="mt-4 pt-3 border-top">
+      <div class="text-white-50 small mb-2">Connecté : {{ authService.getUserFirstName() }}</div>
+      <button class="btn btn-outline-light btn-sm w-100" (click)="onLogout()">
+        🚪 Déconnexion
+      </button>
+    </div>
   </div>
 
   <!-- Contenu -->

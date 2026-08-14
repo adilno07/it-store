@@ -18,6 +18,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
+  imageUrl: string | null;
   brand: Brand | null;
   category: Category | null;
 }
@@ -28,6 +29,7 @@ interface NewProduct {
   price: number | null;
   brandId: number | null;
   categoryId: number | null;
+  imageUrl: string | null;
 }
 
 interface SearchFilters {
@@ -55,6 +57,7 @@ export class ProductList implements OnInit {
     price: null,
     brandId: null,
     categoryId: null,
+    imageUrl: null,
   };
 
   editingProduct: Product | null = null;
@@ -69,9 +72,13 @@ export class ProductList implements OnInit {
     maxPrice: null,
   };
 
+  uploading: boolean = false;
+
   private apiUrl = 'http://localhost:8080/api/products';
   private categoriesUrl = 'http://localhost:8080/api/categories';
   private brandsUrl = 'http://localhost:8080/api/brands';
+  private uploadUrl = 'http://localhost:8080/api/images/upload';
+  baseUrl = 'http://localhost:8080';
   private searchTimeout: any;
 
   constructor(
@@ -154,6 +161,33 @@ export class ProductList implements OnInit {
     this.loadProducts();
   }
 
+  onFileSelected(event: Event, target: 'new' | 'edit') {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.uploading = true;
+
+    this.http.post<{ imageUrl: string }>(this.uploadUrl, formData).subscribe({
+      next: (res) => {
+        if (target === 'new') {
+          this.newProduct.imageUrl = res.imageUrl;
+        } else if (this.editingProduct) {
+          this.editingProduct.imageUrl = res.imageUrl;
+        }
+        this.uploading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        alert("Erreur lors de l'upload de l'image.");
+        this.uploading = false;
+      },
+    });
+  }
+
   createProduct() {
     if (!this.newProduct.name.trim() || !this.newProduct.price || this.newProduct.price <= 0) {
       alert('Merci de remplir au moins le nom et un prix valide.');
@@ -164,6 +198,7 @@ export class ProductList implements OnInit {
       name: this.newProduct.name,
       description: this.newProduct.description,
       price: this.newProduct.price,
+      imageUrl: this.newProduct.imageUrl,
       brand: this.newProduct.brandId ? { id: this.newProduct.brandId } : null,
       category: this.newProduct.categoryId ? { id: this.newProduct.categoryId } : null,
     };
@@ -198,6 +233,7 @@ export class ProductList implements OnInit {
       name: this.editingProduct.name,
       description: this.editingProduct.description,
       price: this.editingProduct.price,
+      imageUrl: this.editingProduct.imageUrl,
       brand: this.editingBrandId ? { id: this.editingBrandId } : null,
       category: this.editingCategoryId ? { id: this.editingCategoryId } : null,
     };
@@ -219,6 +255,13 @@ export class ProductList implements OnInit {
   }
 
   resetForm() {
-    this.newProduct = { name: '', description: '', price: null, brandId: null, categoryId: null };
+    this.newProduct = {
+      name: '',
+      description: '',
+      price: null,
+      brandId: null,
+      categoryId: null,
+      imageUrl: null,
+    };
   }
 }
