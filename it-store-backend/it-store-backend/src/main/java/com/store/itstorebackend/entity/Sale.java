@@ -28,6 +28,14 @@ public class Sale {
 
     private Double total;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SaleSource source = SaleSource.IN_STORE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status = OrderStatus.CONFIRMED;
+
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<SaleItem> items;

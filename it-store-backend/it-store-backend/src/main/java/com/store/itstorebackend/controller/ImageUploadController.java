@@ -17,7 +17,10 @@ import java.util.UUID;
 public class ImageUploadController {
 
     private static final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/webp");
-    private final Path uploadDir = Path.of("uploads/products").toAbsolutePath();
+
+    private static final Path UPLOAD_DIR = Path.of(
+            "C:/Users/Ideapad Gaming 3/Desktop/PRJT_PFA/it-store-backend/it-store-backend/uploads/products"
+    );
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
@@ -30,11 +33,11 @@ public class ImageUploadController {
             return ResponseEntity.badRequest().body("Format non supporté. Utilisez JPEG, PNG ou WEBP.");
         }
 
-        Files.createDirectories(uploadDir);
+        Files.createDirectories(UPLOAD_DIR);
 
         String extension = getExtension(file.getOriginalFilename());
         String fileName = UUID.randomUUID() + extension;
-        Path targetPath = uploadDir.resolve(fileName);
+        Path targetPath = UPLOAD_DIR.resolve(fileName);
 
         file.transferTo(targetPath);
 

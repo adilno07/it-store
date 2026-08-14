@@ -1,4 +1,12 @@
 package com.store.itstorebackend.repository;
 
-public class RoleRepository {
+import com.store.itstorebackend.entity.Role;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface RoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByName(String name);
 }

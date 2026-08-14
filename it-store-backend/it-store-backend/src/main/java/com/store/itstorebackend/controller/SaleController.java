@@ -32,6 +32,16 @@ public class SaleController {
         return saleService.createSale(request);
     }
 
+    @PutMapping("/{id}/confirm")
+    public Sale confirmOrder(@PathVariable Long id) {
+        return saleService.confirmOrder(id);
+    }
+
+    @PutMapping("/{id}/cancel")
+    public Sale cancelOrder(@PathVariable Long id) {
+        return saleService.cancelOrder(id);
+    }
+
     @DeleteMapping("/{id}")
     public void deleteSale(@PathVariable Long id) {
         saleService.deleteSale(id);

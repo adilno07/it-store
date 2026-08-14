@@ -24,6 +24,8 @@ public class Product {
 
     private Integer quantity;
 
+    private String imageUrl;
+
     @ManyToOne
     @JoinColumn(name = "brand_id")
     private Brand brand;

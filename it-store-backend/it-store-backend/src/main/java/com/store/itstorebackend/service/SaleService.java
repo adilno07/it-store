@@ -34,8 +34,19 @@ public class SaleService {
         return saleRepository.findById(id).orElse(null);
     }
 
+    // Vente créée directement par un employé/admin en magasin : confirmée immédiatement, stock déduit tout de suite
     @Transactional
     public Sale createSale(SaleRequest request) {
+        return createSaleInternal(request, SaleSource.IN_STORE, OrderStatus.CONFIRMED, true);
+    }
+
+    // Utilisé par le flow public (commande en ligne) : reste PENDING, stock non déduit
+    @Transactional
+    public Sale createPendingOrder(SaleRequest request) {
+        return createSaleInternal(request, SaleSource.ONLINE, OrderStatus.PENDING, false);
+    }
+
+    private Sale createSaleInternal(SaleRequest request, SaleSource source, OrderStatus status, boolean deductStock) {
 
         Customer customer = null;
         if (request.getCustomerId() != null) {
@@ -46,6 +57,8 @@ public class SaleService {
         Sale sale = new Sale();
         sale.setCustomer(customer);
         sale.setSaleDate(LocalDateTime.now());
+        sale.setSource(source);
+        sale.setStatus(status);
 
         List<SaleItem> items = new ArrayList<>();
         double total = 0.0;
@@ -55,7 +68,7 @@ public class SaleService {
             Product product = productRepository.findById(itemRequest.getProductId())
                     .orElseThrow(() -> new RuntimeException("Produit introuvable : " + itemRequest.getProductId()));
 
-            if (product.getQuantity() < itemRequest.getQuantity()) {
+            if (deductStock && product.getQuantity() < itemRequest.getQuantity()) {
                 throw new RuntimeException("Stock insuffisant pour : " + product.getName() +
                         " (disponible : " + product.getQuantity() + ", demandé : " + itemRequest.getQuantity() + ")");
             }
@@ -69,13 +82,52 @@ public class SaleService {
             items.add(item);
             total += product.getPrice() * itemRequest.getQuantity();
 
-            product.setQuantity(product.getQuantity() - itemRequest.getQuantity());
-            productRepository.save(product);
+            if (deductStock) {
+                product.setQuantity(product.getQuantity() - itemRequest.getQuantity());
+                productRepository.save(product);
+            }
         }
 
         sale.setItems(items);
         sale.setTotal(total);
 
+        return saleRepository.save(sale);
+    }
+
+    // Confirmation d'une commande en attente par le staff : déduit le stock à ce moment-là
+    @Transactional
+    public Sale confirmOrder(Long id) {
+        Sale sale = saleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Commande introuvable."));
+
+        if (sale.getStatus() != OrderStatus.PENDING) {
+            throw new RuntimeException("Seule une commande en attente peut être confirmée.");
+        }
+
+        for (SaleItem item : sale.getItems()) {
+            Product product = item.getProduct();
+            if (product.getQuantity() < item.getQuantity()) {
+                throw new RuntimeException("Stock insuffisant pour : " + product.getName());
+            }
+            product.setQuantity(product.getQuantity() - item.getQuantity());
+            productRepository.save(product);
+        }
+
+        sale.setStatus(OrderStatus.CONFIRMED);
+        return saleRepository.save(sale);
+    }
+
+    // Annulation d'une commande en attente : aucun impact sur le stock (jamais déduit)
+    @Transactional
+    public Sale cancelOrder(Long id) {
+        Sale sale = saleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Commande introuvable."));
+
+        if (sale.getStatus() != OrderStatus.PENDING) {
+            throw new RuntimeException("Seule une commande en attente peut être annulée.");
+        }
+
+        sale.setStatus(OrderStatus.CANCELLED);
         return saleRepository.save(sale);
     }
 

@@ -1,4 +1,6 @@
 package com.store.itstorebackend.entity;
 
-public class SaleSource {
+public enum SaleSource {
+    IN_STORE,
+    ONLINE
 }
