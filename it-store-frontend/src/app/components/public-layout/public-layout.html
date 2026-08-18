@@ -1,0 +1,37 @@
+<div class="public-shell d-flex flex-column min-vh-100">
+  <nav class="navbar navbar-expand-lg navbar-dark public-navbar px-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold fs-4" routerLink="/shop">
+        IT <span class="brand-accent">STORE</span>
+      </a>
+
+      <div class="d-none d-lg-flex gap-4 mx-auto public-nav-links">
+        <a class="nav-link" routerLink="/" routerLinkActive="active-link">Accueil</a>
+        <a class="nav-link" routerLink="/shop" routerLinkActive="active-link">Produits</a>
+        <a class="nav-link" href="#">Catégories</a>
+        <a class="nav-link" href="#">Promotions</a>
+        <a class="nav-link" href="#">À propos</a>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <button class="icon-btn" type="button" title="Rechercher">🔍</button>
+        <button class="icon-btn" type="button" title="Favoris">♡</button>
+
+        <a class="cart-btn" routerLink="/shop/cart">
+          🛒 Panier
+          @if (cart.itemCount() > 0) {
+            <span class="badge bg-danger rounded-pill ms-1">{{ cart.itemCount() }}</span>
+          }
+        </a>
+
+        <a class="btn btn-primary fw-semibold px-3" routerLink="/login">Connexion</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="public-content flex-grow-1">
+    <router-outlet></router-outlet>
+  </div>
+
+  <app-footer></app-footer>
+</div>

@@ -12,14 +12,27 @@ import { authGuard } from './guards/auth-guard';
 import { ShopCatalog } from './components/shop-catalog/shop-catalog';
 import { ShopCart } from './components/shop-cart/shop-cart';
 import { ShopCheckout } from './components/shop-checkout/shop-checkout';
+import { PublicLayout } from './components/public-layout/public-layout';
+import { Home } from './components/home/home';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
-  { path: 'shop', component: ShopCatalog },
-  { path: 'shop/cart', component: ShopCart },
-  { path: 'shop/checkout', component: ShopCheckout },
+
+  // Site public — navbar + footer partagés
   {
     path: '',
+    component: PublicLayout,
+    children: [
+      { path: '', component: Home },
+      { path: 'shop', component: ShopCatalog },
+      { path: 'shop/cart', component: ShopCart },
+      { path: 'shop/checkout', component: ShopCheckout },
+    ],
+  },
+
+  // Back-office admin — navbar existante (sidebar)
+  {
+    path: 'admin',
     component: Layout,
     canActivate: [authGuard],
     children: [

@@ -29,6 +29,7 @@ export class ShopCatalog implements OnInit {
   products: Product[] = [];
   searchTerm: string = '';
   baseUrl = 'http://localhost:8080';
+  favorites = new Set<number>();
 
   private apiUrl = 'http://localhost:8080/api/public/products';
   private searchTimeout: any;
@@ -72,6 +73,19 @@ export class ShopCatalog implements OnInit {
       { id: product.id, name: product.name, price: product.price, quantity: product.quantity },
       1,
     );
+  }
+
+  toggleFavorite(productId: number, event: Event) {
+    event.stopPropagation();
+    if (this.favorites.has(productId)) {
+      this.favorites.delete(productId);
+    } else {
+      this.favorites.add(productId);
+    }
+  }
+
+  isFavorite(productId: number): boolean {
+    return this.favorites.has(productId);
   }
 
   goToCart() {

@@ -1,0 +1,52 @@
+.public-navbar {
+  background-color: #1a1d23;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.brand-accent {
+  color: #0d6efd;
+}
+
+.public-nav-links .nav-link {
+  color: #cfd3d8;
+  font-weight: 500;
+}
+
+.public-nav-links .nav-link:hover,
+.public-nav-links .active-link {
+  color: #ffffff;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: #cfd3d8;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  color: #ffffff;
+}
+
+.cart-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #495057;
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.cart-btn:hover {
+  background-color: #2a2e35;
+  color: #ffffff;
+}
+
+.public-content {
+  min-height: calc(100vh - 66px);
+}

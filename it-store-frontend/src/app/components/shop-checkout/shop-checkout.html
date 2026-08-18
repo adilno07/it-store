@@ -1,94 +1,84 @@
-<div class="bg-light min-vh-100">
-  <nav class="navbar navbar-dark bg-dark px-4">
-    <a class="navbar-brand fw-bold" routerLink="/shop">IT Store</a>
-  </nav>
-
-  <div class="container py-4" style="max-width: 600px">
+<div class="checkout-page">
+  <div class="container py-5" style="max-width: 700px">
     @if (orderConfirmed) {
-      <div class="card shadow-sm">
-        <div class="card-body text-center py-5">
-          <div class="fs-1 mb-3">✅</div>
-          <h3 class="text-success fw-bold mb-3">Commande confirmée !</h3>
-          <p class="text-muted mb-4">
-            Merci pour votre commande. Notre équipe va la traiter dans les plus brefs délais.
-          </p>
-          <button class="btn btn-primary" (click)="backToShop()">Retour à la boutique</button>
-        </div>
+      <div class="confirmation-card text-center py-5">
+        <div class="confirm-icon mb-3">✅</div>
+        <h3 class="confirm-title mb-3">Commande confirmée !</h3>
+        <p class="text-muted mb-4">
+          Merci pour votre commande. Notre équipe va la traiter dans les plus brefs délais.
+        </p>
+        <button class="btn btn-primary px-4" (click)="backToShop()">Retour à la boutique</button>
       </div>
     } @else {
-      <h2 class="mb-4 fw-bold">Finaliser la commande</h2>
+      <h1 class="page-title mb-4">Finaliser la commande</h1>
 
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          <h6 class="mb-3">Récapitulatif</h6>
-          @for (item of cart.items(); track item.product.id) {
-            <div class="d-flex justify-content-between small mb-2">
-              <span>{{ item.quantity }} × {{ item.product.name }}</span>
-              <span>{{ item.product.price * item.quantity }} DH</span>
-            </div>
-          }
-          <div class="d-flex justify-content-between fw-bold pt-2 border-top mt-2">
-            <span>Total</span>
-            <span>{{ cart.total() }} DH</span>
+      <div class="summary-card mb-4">
+        <h6 class="card-heading mb-3">Récapitulatif</h6>
+        @for (item of cart.items(); track item.product.id) {
+          <div class="d-flex justify-content-between summary-line">
+            <span>{{ item.quantity }} × {{ item.product.name }}</span>
+            <span>{{ item.product.price * item.quantity }} DH</span>
           </div>
+        }
+        <div class="d-flex justify-content-between summary-total">
+          <span>Total</span>
+          <span>{{ cart.total() }} DH</span>
         </div>
       </div>
 
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h6 class="mb-3">Vos coordonnées</h6>
-          <form (ngSubmit)="onSubmit()">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label">Prénom</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  [(ngModel)]="firstName"
-                  name="firstName"
-                  required
-                />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Nom</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  [(ngModel)]="lastName"
-                  name="lastName"
-                  required
-                />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Téléphone</label>
-                <input
-                  type="tel"
-                  class="form-control"
-                  [(ngModel)]="phone"
-                  name="phone"
-                  required
-                  placeholder="0612345678"
-                />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Email (optionnel)</label>
-                <input type="email" class="form-control" [(ngModel)]="email" name="email" />
-              </div>
-              <div class="col-12">
-                <label class="form-label">Adresse (optionnel)</label>
-                <input type="text" class="form-control" [(ngModel)]="address" name="address" />
-              </div>
+      <div class="form-card">
+        <h6 class="card-heading mb-3">Vos coordonnées</h6>
+        <form (ngSubmit)="onSubmit()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Prénom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="firstName"
+                name="firstName"
+                required
+              />
             </div>
+            <div class="col-md-6">
+              <label class="form-label">Nom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="lastName"
+                name="lastName"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Téléphone</label>
+              <input
+                type="tel"
+                class="form-control"
+                [(ngModel)]="phone"
+                name="phone"
+                required
+                placeholder="0612345678"
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email (optionnel)</label>
+              <input type="email" class="form-control" [(ngModel)]="email" name="email" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Adresse (optionnel)</label>
+              <input type="text" class="form-control" [(ngModel)]="address" name="address" />
+            </div>
+          </div>
 
-            @if (errorMessage) {
-              <div class="alert alert-danger mt-3 py-2">{{ errorMessage }}</div>
-            }
+          @if (errorMessage) {
+            <div class="alert alert-danger mt-3 py-2">{{ errorMessage }}</div>
+          }
 
-            <button type="submit" class="btn btn-success btn-lg w-100 mt-4">
-              Confirmer la commande — {{ cart.total() }} DH
-            </button>
-          </form>
-        </div>
+          <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">
+            Confirmer la commande — {{ cart.total() }} DH
+          </button>
+        </form>
       </div>
     }
   </div>

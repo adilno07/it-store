@@ -1,52 +1,47 @@
-<div class="bg-light min-vh-100">
-  <nav class="navbar navbar-dark bg-dark px-4">
-    <a class="navbar-brand fw-bold" routerLink="/shop">IT Store</a>
-  </nav>
-
-  <div class="container py-4" style="max-width: 800px">
-    <h2 class="mb-4 fw-bold">Mon panier</h2>
+<div class="cart-page">
+  <div class="container py-5" style="max-width: 900px">
+    <h1 class="page-title mb-4">Mon panier</h1>
 
     @if (cart.items().length === 0) {
-      <div class="text-center py-5">
-        <p class="text-muted mb-3">Votre panier est vide.</p>
-        <a routerLink="/shop" class="btn btn-primary">Continuer mes achats</a>
+      <div class="empty-cart text-center py-5">
+        <div class="empty-icon mb-3">🛒</div>
+        <p class="text-muted mb-4">Votre panier est vide.</p>
+        <a routerLink="/shop" class="btn btn-primary px-4">Continuer mes achats</a>
       </div>
     } @else {
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          @for (item of cart.items(); track item.product.id) {
-            <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-              <div>
-                <h6 class="mb-1">{{ item.product.name }}</h6>
-                <span class="text-muted">{{ item.product.price }} DH / unité</span>
-              </div>
-              <div class="d-flex align-items-center gap-3">
-                <input
-                  type="number"
-                  class="form-control"
-                  style="width: 80px"
-                  [ngModel]="item.quantity"
-                  (ngModelChange)="onQuantityChange(item.product.id, $event)"
-                  min="1"
-                  [max]="item.product.quantity"
-                />
-                <span class="fw-bold" style="width: 100px">
-                  {{ item.product.price * item.quantity }} DH
-                </span>
-                <button class="btn btn-sm btn-outline-danger" (click)="removeItem(item.product.id)">
-                  ✕
-                </button>
-              </div>
+      <div class="cart-card mb-4">
+        @for (item of cart.items(); track item.product.id) {
+          <div class="cart-item">
+            <div class="cart-item-info">
+              <h6 class="item-name mb-1">{{ item.product.name }}</h6>
+              <span class="item-unit-price">{{ item.product.price }} DH / unité</span>
             </div>
-          }
-        </div>
+
+            <div class="cart-item-actions">
+              <input
+                type="number"
+                class="form-control qty-input"
+                [ngModel]="item.quantity"
+                (ngModelChange)="onQuantityChange(item.product.id, $event)"
+                min="1"
+                [max]="item.product.quantity"
+              />
+              <span class="item-subtotal"> {{ item.product.price * item.quantity }} DH </span>
+              <button class="remove-btn" (click)="removeItem(item.product.id)" aria-label="Retirer">
+                ✕
+              </button>
+            </div>
+          </div>
+        }
       </div>
 
-      <div class="d-flex justify-content-between align-items-center">
+      <div class="cart-summary">
         <a routerLink="/shop" class="btn btn-outline-secondary">← Continuer mes achats</a>
         <div class="text-end">
-          <div class="fs-4 fw-bold mb-2">Total : {{ cart.total() }} DH</div>
-          <button class="btn btn-success btn-lg" (click)="goToCheckout()">
+          <div class="total-label mb-2">
+            Total : <span class="total-amount">{{ cart.total() }} DH</span>
+          </div>
+          <button class="btn btn-primary btn-lg px-4" (click)="goToCheckout()">
             Valider la commande →
           </button>
         </div>
