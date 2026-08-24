@@ -21,6 +21,11 @@ public class BrandService {
         return brandRepository.save(brand);
     }
 
+    public Brand updateBrand(Long id, Brand updatedBrand) {
+        updatedBrand.setId(id);
+        return brandRepository.save(updatedBrand);
+    }
+
     public void deleteBrand(Long id) {
         brandRepository.deleteById(id);
     }
