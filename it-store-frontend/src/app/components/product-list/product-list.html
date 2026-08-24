@@ -1,260 +1,169 @@
-<div class="container py-4">
-  <h1 class="mb-4 text-primary fw-bold">Gestion des produits</h1>
+<div class="admin-page">
+  <h1 class="page-title mb-4">Gestion des produits</h1>
 
-  <!-- Formulaire -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      @if (editingProduct) {
-        <h5 class="card-title mb-3">Modifier le produit</h5>
-        <form (ngSubmit)="updateProduct()">
-          <div class="row g-3">
-            <div class="col-md-2">
-              <label class="form-label">Nom</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="editingProduct.name"
-                name="editName"
-                required
-              />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Description</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="editingProduct.description"
-                name="editDescription"
-              />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Prix</label>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="editingProduct.price"
-                name="editPrice"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Marque</label>
-              <select class="form-select" [(ngModel)]="editingBrandId" name="editBrand">
-                <option [ngValue]="null">-- Aucune --</option>
-                @for (b of brands; track b.id) {
-                  <option [ngValue]="b.id">{{ b.name }}</option>
-                }
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Catégorie</label>
-              <select class="form-select" [(ngModel)]="editingCategoryId" name="editCategory">
-                <option [ngValue]="null">-- Aucune --</option>
-                @for (cat of categories; track cat.id) {
-                  <option [ngValue]="cat.id">{{ cat.name }}</option>
-                }
-              </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end gap-2">
-              <button type="submit" class="btn btn-primary">Enregistrer</button>
-              <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()">
-                Annuler
-              </button>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Photo</label>
-              <input
-                type="file"
-                class="form-control"
-                accept="image/jpeg,image/png,image/webp"
-                (change)="onFileSelected($event, 'edit')"
-              />
-              @if (uploading) {
-                <small class="text-muted">Envoi en cours...</small>
-              }
-            </div>
-            @if (editingProduct.imageUrl) {
-              <div class="col-md-2">
-                <img
-                  [src]="baseUrl + editingProduct.imageUrl"
-                  class="img-thumbnail"
-                  style="height: 80px"
-                />
-              </div>
-            }
-          </div>
-        </form>
-      } @else {
-        <h5 class="card-title mb-3">Ajouter un produit</h5>
-        <form (ngSubmit)="createProduct()">
-          <div class="row g-3">
-            <div class="col-md-2">
-              <label class="form-label">Nom</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="newProduct.name"
-                name="name"
-                required
-              />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Description</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="newProduct.description"
-                name="description"
-              />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Prix</label>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="newProduct.price"
-                name="price"
-                required
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-              />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Marque</label>
-              <select class="form-select" [(ngModel)]="newProduct.brandId" name="brand">
-                <option [ngValue]="null">-- Aucune --</option>
-                @for (b of brands; track b.id) {
-                  <option [ngValue]="b.id">{{ b.name }}</option>
-                }
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Catégorie</label>
-              <select class="form-select" [(ngModel)]="newProduct.categoryId" name="category">
-                <option [ngValue]="null">-- Aucune --</option>
-                @for (cat of categories; track cat.id) {
-                  <option [ngValue]="cat.id">{{ cat.name }}</option>
-                }
-              </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-              <button type="submit" class="btn btn-success w-100">+ Créer</button>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Photo</label>
-              <input
-                type="file"
-                class="form-control"
-                accept="image/jpeg,image/png,image/webp"
-                (change)="onFileSelected($event, 'new')"
-              />
-              @if (uploading) {
-                <small class="text-muted">Envoi en cours...</small>
-              }
-            </div>
-            @if (newProduct.imageUrl) {
-              <div class="col-md-2">
-                <img
-                  [src]="baseUrl + newProduct.imageUrl"
-                  class="img-thumbnail"
-                  style="height: 80px"
-                />
-              </div>
-            }
-          </div>
-        </form>
-      }
-    </div>
-  </div>
-
-  <!-- Filtres / Recherche -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <h5 class="card-title mb-3">Rechercher / Filtrer</h5>
-      <div class="row g-3 align-items-end">
+  <!-- Formulaire de création -->
+  <div class="admin-card mb-4">
+    <h5 class="card-heading mb-3">Ajouter un produit</h5>
+    <form (ngSubmit)="createProduct()">
+      <div class="row g-3">
         <div class="col-md-3">
           <label class="form-label">Nom</label>
           <input
             type="text"
             class="form-control"
-            [(ngModel)]="filters.name"
-            (ngModelChange)="onFilterChange()"
-            name="filterName"
-            placeholder="Rechercher par nom..."
+            [(ngModel)]="newProduct.name"
+            name="name"
+            required
+          />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Description</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="newProduct.description"
+            name="description"
           />
         </div>
         <div class="col-md-2">
-          <label class="form-label">Catégorie</label>
-          <select
-            class="form-select"
-            [(ngModel)]="filters.categoryId"
-            (ngModelChange)="onFilterChange()"
-            name="filterCategory"
-          >
-            <option [ngValue]="null">Toutes</option>
-            @for (cat of categories; track cat.id) {
-              <option [ngValue]="cat.id">{{ cat.name }}</option>
-            }
-          </select>
+          <label class="form-label">Prix</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="newProduct.price"
+            name="price"
+            required
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+          />
         </div>
         <div class="col-md-2">
           <label class="form-label">Marque</label>
-          <select
-            class="form-select"
-            [(ngModel)]="filters.brandId"
-            (ngModelChange)="onFilterChange()"
-            name="filterBrand"
-          >
-            <option [ngValue]="null">Toutes</option>
+          <select class="form-select" [(ngModel)]="newProduct.brandId" name="brand">
+            <option [ngValue]="null">-- Aucune --</option>
             @for (b of brands; track b.id) {
               <option [ngValue]="b.id">{{ b.name }}</option>
             }
           </select>
         </div>
         <div class="col-md-2">
-          <label class="form-label">Prix min</label>
-          <input
-            type="number"
-            class="form-control"
-            [(ngModel)]="filters.minPrice"
-            (ngModelChange)="onFilterChange()"
-            name="filterMinPrice"
-            min="0"
-            placeholder="0"
-          />
+          <label class="form-label">Catégorie</label>
+          <select class="form-select" [(ngModel)]="newProduct.categoryId" name="category">
+            <option [ngValue]="null">-- Aucune --</option>
+            @for (cat of categories; track cat.id) {
+              <option [ngValue]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
         </div>
-        <div class="col-md-2">
-          <label class="form-label">Prix max</label>
+
+        <div class="col-md-4">
+          <label class="form-label">Photo</label>
           <input
-            type="number"
+            type="file"
             class="form-control"
-            [(ngModel)]="filters.maxPrice"
-            (ngModelChange)="onFilterChange()"
-            name="filterMaxPrice"
-            min="0"
-            placeholder="∞"
+            accept="image/jpeg,image/png,image/webp"
+            (change)="onFileSelected($event, 'new')"
           />
+          @if (uploading) {
+            <small class="text-muted">Envoi en cours...</small>
+          }
         </div>
-        <div class="col-12 d-flex justify-content-center gap-3 mt-4">
-          <button class="btn btn-primary px-4" (click)="search()">Filtrer</button>
-          <button class="btn btn-outline-secondary btn-sm" (click)="resetFilters()">
-            Réinitialiser
-          </button>
+        @if (newProduct.imageUrl) {
+          <div class="col-md-2">
+            <img [src]="baseUrl + newProduct.imageUrl" class="preview-thumb" />
+          </div>
+        }
+
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary px-4">+ Créer le produit</button>
         </div>
       </div>
-    </div>
+    </form>
   </div>
 
-  <!-- Tableau -->
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h5 class="card-title mb-3">Liste des produits</h5>
+  <!-- Filtres + Liste dans la même carte -->
+  <div class="admin-card">
+    <h5 class="card-heading mb-3">Rechercher / Filtrer</h5>
+    <div class="row g-3 align-items-end mb-4">
+      <div class="col-md-3">
+        <label class="form-label">Nom</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="filters.name"
+          (ngModelChange)="onFilterChange()"
+          name="filterName"
+          placeholder="Rechercher par nom..."
+        />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Catégorie</label>
+        <select
+          class="form-select"
+          [(ngModel)]="filters.categoryId"
+          (ngModelChange)="onFilterChange()"
+          name="filterCategory"
+        >
+          <option [ngValue]="null">Toutes</option>
+          @for (cat of categories; track cat.id) {
+            <option [ngValue]="cat.id">{{ cat.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Marque</label>
+        <select
+          class="form-select"
+          [(ngModel)]="filters.brandId"
+          (ngModelChange)="onFilterChange()"
+          name="filterBrand"
+        >
+          <option [ngValue]="null">Toutes</option>
+          @for (b of brands; track b.id) {
+            <option [ngValue]="b.id">{{ b.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Prix min</label>
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="filters.minPrice"
+          (ngModelChange)="onFilterChange()"
+          name="filterMinPrice"
+          min="0"
+          placeholder="0"
+        />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Prix max</label>
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="filters.maxPrice"
+          (ngModelChange)="onFilterChange()"
+          name="filterMaxPrice"
+          min="0"
+          placeholder="∞"
+        />
+      </div>
+      <div class="col-12 d-flex gap-3 mt-3">
+        <button class="btn btn-primary px-4" (click)="search()">Filtrer</button>
+        <button class="btn btn-outline-secondary btn-sm" (click)="resetFilters()">
+          Réinitialiser
+        </button>
+      </div>
+    </div>
 
-      <table class="table table-hover align-middle">
-        <thead class="table-light">
+    <hr class="section-divider" />
+
+    <h5 class="card-heading mb-3 mt-4">Liste des produits</h5>
+
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
           <tr>
             <th>Photo</th>
             <th>ID</th>
@@ -267,15 +176,11 @@
           </tr>
         </thead>
         <tbody>
-          @for (product of products; track product.id) {
+          @for (product of paginatedProducts; track product.id) {
             <tr>
               <td>
                 @if (product.imageUrl) {
-                  <img
-                    [src]="baseUrl + product.imageUrl"
-                    style="width: 50px; height: 50px; object-fit: cover"
-                    class="rounded"
-                  />
+                  <img [src]="baseUrl + product.imageUrl" class="row-thumb" />
                 } @else {
                   <span class="text-muted small">—</span>
                 }
@@ -283,26 +188,29 @@
               <td>{{ product.id }}</td>
               <td class="fw-semibold">{{ product.name }}</td>
               <td class="text-muted">{{ product.description }}</td>
-              <td>{{ product.price }} DH</td>
+              <td class="fw-bold text-primary">{{ product.price }} DH</td>
               <td>
                 @if (product.brand) {
-                  <span class="badge bg-secondary">{{ product.brand.name }}</span>
+                  <span class="pill-tag">{{ product.brand.name }}</span>
                 } @else {
                   <span class="text-muted">—</span>
                 }
               </td>
               <td>
                 @if (product.category) {
-                  <span class="badge bg-info text-dark">{{ product.category.name }}</span>
+                  <span class="pill-tag category">{{ product.category.name }}</span>
                 } @else {
                   <span class="text-muted">—</span>
                 }
               </td>
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(product)">
+                <button
+                  class="btn btn-sm btn-outline-primary me-2"
+                  (click)="openEditModal(product)"
+                >
                   Modifier
                 </button>
-                <button class="btn btn-sm btn-outline-danger" (click)="deleteProduct(product.id)">
+                <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(product)">
                   Supprimer
                 </button>
               </td>
@@ -312,8 +220,143 @@
       </table>
 
       @if (products.length === 0) {
-        <p class="text-muted text-center py-3 mb-0">Aucun produit pour le moment.</p>
+        <p class="text-muted text-center py-4 mb-0">Aucun produit pour le moment.</p>
+      }
+
+      @if (products.length > productsPageSize) {
+        <div class="pagination-bar">
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            [disabled]="productsPage === 1"
+            (click)="goToProductsPage(productsPage - 1)"
+          >
+            ‹ Précédent
+          </button>
+          <span class="pagination-label">Page {{ productsPage }} / {{ totalProductsPages }}</span>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            [disabled]="productsPage === totalProductsPages"
+            (click)="goToProductsPage(productsPage + 1)"
+          >
+            Suivant ›
+          </button>
+        </div>
       }
     </div>
   </div>
 </div>
+
+<!-- MODALE D'ÉDITION -->
+@if (editModalOpen && editingProduct) {
+  <div class="modal-backdrop-custom" (click)="closeEditModal()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <h5 class="mb-0">Modifier le produit</h5>
+        <button class="modal-close-btn" (click)="closeEditModal()" aria-label="Fermer">✕</button>
+      </div>
+
+      <div class="modal-body-custom">
+        <form (ngSubmit)="saveEdit()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nom</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="editingProduct.name"
+                name="editName"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Description</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="editingProduct.description"
+                name="editDescription"
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Prix</label>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="editingProduct.price"
+                name="editPrice"
+                required
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Marque</label>
+              <select class="form-select" [(ngModel)]="editingBrandId" name="editBrand">
+                <option [ngValue]="null">-- Aucune --</option>
+                @for (b of brands; track b.id) {
+                  <option [ngValue]="b.id">{{ b.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Catégorie</label>
+              <select class="form-select" [(ngModel)]="editingCategoryId" name="editCategory">
+                <option [ngValue]="null">-- Aucune --</option>
+                @for (cat of categories; track cat.id) {
+                  <option [ngValue]="cat.id">{{ cat.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="col-md-8">
+              <label class="form-label">Photo</label>
+              <input
+                type="file"
+                class="form-control"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onFileSelected($event, 'edit')"
+              />
+              @if (uploading) {
+                <small class="text-muted">Envoi en cours...</small>
+              }
+            </div>
+            @if (editingProduct.imageUrl) {
+              <div class="col-md-4">
+                <img [src]="baseUrl + editingProduct.imageUrl" class="preview-thumb" />
+              </div>
+            }
+          </div>
+
+          <div class="modal-footer-custom">
+            <button type="button" class="btn btn-outline-secondary" (click)="closeEditModal()">
+              Annuler
+            </button>
+            <button type="submit" class="btn btn-primary px-4">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODALE DE SUPPRESSION -->
+@if (deleteModalOpen && productToDelete) {
+  <div class="modal-backdrop-custom" (click)="closeDeleteModal()">
+    <div class="modal-panel confirm-panel" (click)="$event.stopPropagation()">
+      <div class="modal-body-custom text-center">
+        <div class="confirm-icon mb-2">⚠️</div>
+        <h5 class="mb-2">Supprimer ce produit ?</h5>
+        <p class="text-muted mb-4">
+          « {{ productToDelete.name }} » sera définitivement supprimé. Cette action est
+          irréversible.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <button class="btn btn-outline-secondary px-4" (click)="closeDeleteModal()">
+            Annuler
+          </button>
+          <button class="btn btn-danger px-4" (click)="confirmDelete()">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

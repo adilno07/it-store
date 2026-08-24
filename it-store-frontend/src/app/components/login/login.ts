@@ -29,7 +29,7 @@ export class Login {
 
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: () => {
-        this.router.navigate(['/products']);
+        this.router.navigate(['/admin/products']);
       },
       error: (err) => {
         this.errorMessage = err.error || 'Email ou mot de passe incorrect.';

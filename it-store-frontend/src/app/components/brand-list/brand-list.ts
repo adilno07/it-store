@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { Toast } from '../../services/toast';
 
 interface Brand {
   id: number;
@@ -19,11 +20,16 @@ export class BrandList implements OnInit {
   newBrandName: string = '';
   editingBrand: Brand | null = null;
 
+  // --- Modale de suppression ---
+  deleteModalOpen = false;
+  brandToDelete: Brand | null = null;
+
   private apiUrl = 'http://localhost:8080/api/brands';
 
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
+    private toast: Toast,
   ) {}
 
   ngOnInit() {
@@ -39,13 +45,14 @@ export class BrandList implements OnInit {
 
   createBrand() {
     if (!this.newBrandName.trim()) {
-      alert('Le nom de la marque est obligatoire.');
+      this.toast.error('Le nom de la marque est obligatoire.');
       return;
     }
 
     this.http.post<Brand>(this.apiUrl, { name: this.newBrandName }).subscribe(() => {
       this.loadBrands();
       this.newBrandName = '';
+      this.toast.success('Marque créée avec succès.');
     });
   }
 
@@ -59,7 +66,7 @@ export class BrandList implements OnInit {
 
   updateBrand() {
     if (!this.editingBrand || !this.editingBrand.name.trim()) {
-      alert('Le nom de la marque est obligatoire.');
+      this.toast.error('Le nom de la marque est obligatoire.');
       return;
     }
 
@@ -68,14 +75,36 @@ export class BrandList implements OnInit {
       .subscribe(() => {
         this.loadBrands();
         this.editingBrand = null;
+        this.toast.success('Marque modifiée avec succès.');
       });
   }
 
-  deleteBrand(id: number) {
-    if (!confirm('Supprimer cette marque ? Les produits liés perdront cette marque.')) return;
+  // --- Suppression via modale ---
+  openDeleteModal(brand: Brand) {
+    this.brandToDelete = brand;
+    this.deleteModalOpen = true;
+  }
 
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe(() => {
-      this.loadBrands();
-    });
+  closeDeleteModal() {
+    this.deleteModalOpen = false;
+    this.brandToDelete = null;
+  }
+
+  confirmDelete() {
+    if (!this.brandToDelete) return;
+
+    this.http
+      .delete(`${this.apiUrl}/${this.brandToDelete.id}`, { responseType: 'text' })
+      .subscribe({
+        next: () => {
+          this.loadBrands();
+          this.toast.success('Marque supprimée.');
+          this.closeDeleteModal();
+        },
+        error: (err) => {
+          this.toast.error(err.error || 'Erreur lors de la suppression de la marque.');
+          this.closeDeleteModal();
+        },
+      });
   }
 }

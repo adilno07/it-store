@@ -1,45 +1,43 @@
-<div class="d-flex">
-  <!-- Sidebar -->
-  <div class="sidebar bg-dark text-white p-3" style="width: 250px; min-height: 100vh">
+<div class="admin-shell">
+  <!-- Sidebar fixe -->
+  <div class="sidebar bg-dark text-white p-3">
     <h4 class="mb-4">IT Store Admin</h4>
 
     <nav class="nav flex-column gap-1">
-      <a class="nav-link text-white" routerLink="/products" routerLinkActive="active-link">
-        📦 Produits
+      <a class="nav-link text-white" routerLink="/admin/products" routerLinkActive="active-link">
+        Produits
       </a>
-      <a class="nav-link text-white" routerLink="/categories" routerLinkActive="active-link">
-        🏷️ Catégories
+      <a class="nav-link text-white" routerLink="/admin/categories" routerLinkActive="active-link">
+        Catégories
       </a>
-      <a class="nav-link text-white" routerLink="/brands" routerLinkActive="active-link">
-        🏭 Marques
+      <a class="nav-link text-white" routerLink="/admin/brands" routerLinkActive="active-link">
+        Marques
       </a>
-      <a class="nav-link text-white" routerLink="/stock" routerLinkActive="active-link">
-        📊 Stock
+      <a class="nav-link text-white" routerLink="/admin/stock" routerLinkActive="active-link">
+        Stock
       </a>
-      <a class="nav-link text-white" routerLink="/customers" routerLinkActive="active-link">
-        👤 Clients
+      <a class="nav-link text-white" routerLink="/admin/customers" routerLinkActive="active-link">
+        Clients
       </a>
-      <a class="nav-link text-white" routerLink="/sales" routerLinkActive="active-link">
-        🛒 Ventes
+      <a class="nav-link text-white" routerLink="/admin/sales" routerLinkActive="active-link">
+        Ventes
       </a>
 
       @if (authService.isAdmin()) {
-        <a class="nav-link text-white" routerLink="/register" routerLinkActive="active-link">
-          👥 Utilisateurs
+        <a class="nav-link text-white" routerLink="/admin/register" routerLinkActive="active-link">
+          Utilisateurs
         </a>
       }
     </nav>
 
     <div class="mt-4 pt-3 border-top">
       <div class="text-white-50 small mb-2">Connecté : {{ authService.getUserFirstName() }}</div>
-      <button class="btn btn-outline-light btn-sm w-100" (click)="onLogout()">
-        🚪 Déconnexion
-      </button>
+      <button class="btn btn-outline-light btn-sm w-100" (click)="onLogout()">Déconnexion</button>
     </div>
   </div>
 
-  <!-- Contenu -->
-  <div class="flex-grow-1">
+  <!-- Contenu défilant -->
+  <div class="admin-main">
     <router-outlet></router-outlet>
   </div>
 </div>

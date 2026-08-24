@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { Toast } from '../../services/toast';
 
 interface Category {
   id: number;
@@ -60,9 +61,15 @@ export class ProductList implements OnInit {
     imageUrl: null,
   };
 
+  // --- Modale d'édition ---
+  editModalOpen = false;
   editingProduct: Product | null = null;
   editingCategoryId: number | null = null;
   editingBrandId: number | null = null;
+
+  // --- Modale de suppression ---
+  deleteModalOpen = false;
+  productToDelete: Product | null = null;
 
   filters: SearchFilters = {
     name: '',
@@ -74,6 +81,10 @@ export class ProductList implements OnInit {
 
   uploading: boolean = false;
 
+  // --- Pagination liste produits ---
+  productsPage = 1;
+  productsPageSize = 5;
+
   private apiUrl = 'http://localhost:8080/api/products';
   private categoriesUrl = 'http://localhost:8080/api/categories';
   private brandsUrl = 'http://localhost:8080/api/brands';
@@ -84,6 +95,7 @@ export class ProductList implements OnInit {
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
+    private toast: Toast,
   ) {}
 
   ngOnInit() {
@@ -95,6 +107,7 @@ export class ProductList implements OnInit {
   loadProducts() {
     this.http.get<Product[]>(this.apiUrl).subscribe((data) => {
       this.products = data;
+      this.productsPage = 1;
       this.cdr.markForCheck();
     });
   }
@@ -111,6 +124,21 @@ export class ProductList implements OnInit {
       this.brands = data;
       this.cdr.markForCheck();
     });
+  }
+
+  // --- Pagination ---
+  get paginatedProducts(): Product[] {
+    const start = (this.productsPage - 1) * this.productsPageSize;
+    return this.products.slice(start, start + this.productsPageSize);
+  }
+
+  get totalProductsPages(): number {
+    return Math.max(1, Math.ceil(this.products.length / this.productsPageSize));
+  }
+
+  goToProductsPage(page: number) {
+    if (page < 1 || page > this.totalProductsPages) return;
+    this.productsPage = page;
   }
 
   onFilterChange() {
@@ -152,6 +180,7 @@ export class ProductList implements OnInit {
 
     this.http.get<Product[]>(`${this.apiUrl}/search`, { params }).subscribe((data) => {
       this.products = data;
+      this.productsPage = 1;
       this.cdr.markForCheck();
     });
   }
@@ -182,7 +211,7 @@ export class ProductList implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        alert("Erreur lors de l'upload de l'image.");
+        this.toast.error("Erreur lors de l'upload de l'image.");
         this.uploading = false;
       },
     });
@@ -190,7 +219,7 @@ export class ProductList implements OnInit {
 
   createProduct() {
     if (!this.newProduct.name.trim() || !this.newProduct.price || this.newProduct.price <= 0) {
-      alert('Merci de remplir au moins le nom et un prix valide.');
+      this.toast.error('Merci de remplir au moins le nom et un prix valide.');
       return;
     }
 
@@ -206,26 +235,30 @@ export class ProductList implements OnInit {
     this.http.post<Product>(this.apiUrl, payload).subscribe(() => {
       this.loadProducts();
       this.resetForm();
+      this.toast.success('Produit créé avec succès.');
     });
   }
 
-  startEdit(product: Product) {
+  // --- Édition via modale ---
+  openEditModal(product: Product) {
     this.editingProduct = { ...product };
     this.editingCategoryId = product.category ? product.category.id : null;
     this.editingBrandId = product.brand ? product.brand.id : null;
+    this.editModalOpen = true;
   }
 
-  cancelEdit() {
+  closeEditModal() {
+    this.editModalOpen = false;
     this.editingProduct = null;
     this.editingCategoryId = null;
     this.editingBrandId = null;
   }
 
-  updateProduct() {
+  saveEdit() {
     if (!this.editingProduct) return;
 
     if (!this.editingProduct.name.trim() || this.editingProduct.price <= 0) {
-      alert('Merci de remplir au moins le nom et un prix valide.');
+      this.toast.error('Merci de remplir au moins le nom et un prix valide.');
       return;
     }
 
@@ -240,18 +273,38 @@ export class ProductList implements OnInit {
 
     this.http.put<Product>(`${this.apiUrl}/${this.editingProduct.id}`, payload).subscribe(() => {
       this.loadProducts();
-      this.editingProduct = null;
-      this.editingCategoryId = null;
-      this.editingBrandId = null;
+      this.closeEditModal();
+      this.toast.success('Produit modifié avec succès.');
     });
   }
 
-  deleteProduct(id: number) {
-    if (!confirm('Supprimer ce produit ?')) return;
+  // --- Suppression via modale ---
+  openDeleteModal(product: Product) {
+    this.productToDelete = product;
+    this.deleteModalOpen = true;
+  }
 
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe(() => {
-      this.loadProducts();
-    });
+  closeDeleteModal() {
+    this.deleteModalOpen = false;
+    this.productToDelete = null;
+  }
+
+  confirmDelete() {
+    if (!this.productToDelete) return;
+
+    this.http
+      .delete(`${this.apiUrl}/${this.productToDelete.id}`, { responseType: 'text' })
+      .subscribe({
+        next: () => {
+          this.loadProducts();
+          this.toast.success('Produit supprimé.');
+          this.closeDeleteModal();
+        },
+        error: (err) => {
+          this.toast.error(err.error || 'Erreur lors de la suppression du produit.');
+          this.closeDeleteModal();
+        },
+      });
   }
 
   resetForm() {

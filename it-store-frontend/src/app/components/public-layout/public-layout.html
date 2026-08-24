@@ -8,14 +8,16 @@
       <div class="d-none d-lg-flex gap-4 mx-auto public-nav-links">
         <a class="nav-link" routerLink="/" routerLinkActive="active-link">Accueil</a>
         <a class="nav-link" routerLink="/shop" routerLinkActive="active-link">Produits</a>
-        <a class="nav-link" href="#">Catégories</a>
-        <a class="nav-link" href="#">Promotions</a>
-        <a class="nav-link" href="#">À propos</a>
+        <a class="nav-link" routerLink="/about" routerLinkActive="active-link">À propos</a>
       </div>
 
       <div class="d-flex align-items-center gap-3">
-        <button class="icon-btn" type="button" title="Rechercher">🔍</button>
-        <button class="icon-btn" type="button" title="Favoris">♡</button>
+        <button class="icon-btn" type="button" title="Rechercher">
+          <a href="http://localhost:4200/shop">🔍</a>
+        </button>
+        <button class="icon-btn" type="button" title="Favoris">
+          <a class="icon-btn" routerLink="/account/favorites" title="Favoris">♡</a>
+        </button>
 
         <a class="cart-btn" routerLink="/shop/cart">
           🛒 Panier
@@ -24,7 +26,30 @@
           }
         </a>
 
-        <a class="btn btn-primary fw-semibold px-3" routerLink="/login">Connexion</a>
+        @if (customerAuth.isLoggedIn()) {
+          <div class="account-menu-wrapper">
+            <button class="account-btn" type="button" (click)="toggleAccountMenu()">
+              👤 {{ customerAuth.customerFirstName() }}
+            </button>
+
+            @if (accountMenuOpen) {
+              <div class="account-dropdown">
+                <a
+                  class="account-dropdown-item"
+                  routerLink="/account/favorites"
+                  (click)="closeAccountMenu()"
+                >
+                  ❤ Mes favoris
+                </a>
+                <button class="account-dropdown-item logout" type="button" (click)="logout()">
+                  🚪 Déconnexion
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <a class="btn btn-primary fw-semibold px-3" routerLink="/account/login">Connexion</a>
+        }
       </div>
     </div>
   </nav>

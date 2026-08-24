@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Cart } from '../../services/cart';
+import { Toast } from '../../services/toast';
 
 @Component({
   selector: 'app-shop-cart',
@@ -13,6 +14,7 @@ export class ShopCart {
   constructor(
     public cart: Cart,
     private router: Router,
+    private toast: Toast,
   ) {}
 
   onQuantityChange(productId: number, quantity: number) {
@@ -25,7 +27,7 @@ export class ShopCart {
 
   goToCheckout() {
     if (this.cart.items().length === 0) {
-      alert('Votre panier est vide.');
+      this.toast.error('Votre panier est vide.');
       return;
     }
     this.router.navigate(['/shop/checkout']);

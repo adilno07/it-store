@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Auth } from '../../services/auth';
+import { Toast } from '../../services/toast';
 
 interface AppUser {
   id: number;
@@ -25,12 +26,13 @@ export class Register implements OnInit {
   lastName: string = '';
   role: string = 'EMPLOYEE';
 
-  errorMessage: string = '';
-  successMessage: string = '';
-
   // --- Liste + édition ---
   users: AppUser[] = [];
   editingUser: AppUser | null = null;
+
+  // --- Modale de suppression ---
+  deleteModalOpen = false;
+  userToDelete: AppUser | null = null;
 
   private usersApiUrl = 'http://localhost:8080/api/users';
 
@@ -38,6 +40,7 @@ export class Register implements OnInit {
     private authService: Auth,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
+    private toast: Toast,
   ) {}
 
   ngOnInit() {
@@ -52,16 +55,13 @@ export class Register implements OnInit {
   }
 
   onSubmit() {
-    this.errorMessage = '';
-    this.successMessage = '';
-
     if (
       !this.email.trim() ||
       !this.password.trim() ||
       !this.firstName.trim() ||
       !this.lastName.trim()
     ) {
-      this.errorMessage = 'Merci de remplir tous les champs.';
+      this.toast.error('Merci de remplir tous les champs.');
       return;
     }
 
@@ -75,12 +75,14 @@ export class Register implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.successMessage = `Compte créé avec succès pour ${this.firstName} ${this.lastName} (${this.role}).`;
+          this.toast.success(
+            `Compte créé avec succès pour ${this.firstName} ${this.lastName} (${this.role}).`,
+          );
           this.resetForm();
           this.loadUsers();
         },
         error: (err) => {
-          this.errorMessage = err.error || 'Erreur lors de la création du compte.';
+          this.toast.error(err.error || 'Erreur lors de la création du compte.');
         },
       });
   }
@@ -105,7 +107,7 @@ export class Register implements OnInit {
     if (!this.editingUser) return;
 
     if (!this.editingUser.firstName.trim() || !this.editingUser.lastName.trim()) {
-      alert('Merci de remplir le prénom et le nom.');
+      this.toast.error('Merci de remplir le prénom et le nom.');
       return;
     }
 
@@ -118,14 +120,36 @@ export class Register implements OnInit {
     this.http.put<AppUser>(`${this.usersApiUrl}/${this.editingUser.id}`, payload).subscribe(() => {
       this.loadUsers();
       this.editingUser = null;
+      this.toast.success('Utilisateur modifié avec succès.');
     });
   }
 
-  deleteUser(id: number) {
-    if (!confirm('Supprimer cet utilisateur ? Cette action est irréversible.')) return;
+  // --- Suppression via modale ---
+  openDeleteModal(user: AppUser) {
+    this.userToDelete = user;
+    this.deleteModalOpen = true;
+  }
 
-    this.http.delete(`${this.usersApiUrl}/${id}`).subscribe(() => {
-      this.loadUsers();
-    });
+  closeDeleteModal() {
+    this.deleteModalOpen = false;
+    this.userToDelete = null;
+  }
+
+  confirmDelete() {
+    if (!this.userToDelete) return;
+
+    this.http
+      .delete(`${this.usersApiUrl}/${this.userToDelete.id}`, { responseType: 'text' })
+      .subscribe({
+        next: () => {
+          this.loadUsers();
+          this.toast.success('Utilisateur supprimé.');
+          this.closeDeleteModal();
+        },
+        error: (err) => {
+          this.toast.error(err.error || "Erreur lors de la suppression de l'utilisateur.");
+          this.closeDeleteModal();
+        },
+      });
   }
 }

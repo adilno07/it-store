@@ -1,40 +1,36 @@
-<div class="container py-4">
+<div class="admin-page">
   @if (pendingOrders.length > 0) {
-    <div class="alert alert-warning shadow-sm mb-4">
-      <h5 class="mb-3">🕒 Commandes en attente ({{ pendingOrders.length }})</h5>
+    <div class="pending-panel mb-4">
+      <h5 class="pending-title mb-3">🕒 Commandes en attente ({{ pendingOrders.length }})</h5>
       @for (order of pendingOrders; track order.id) {
-        <div class="card mb-2">
-          <div class="card-body py-2">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <span class="fw-semibold">
-                  @if (order.customer) {
-                    {{ order.customer.firstName }} {{ order.customer.lastName }} ({{
-                      order.customer.phone
-                    }})
-                  }
-                </span>
-                <span class="badge bg-info text-dark ms-2">{{ order.source }}</span>
-                <div class="text-muted small mt-1">
-                  {{ order.saleDate | date: 'dd/MM/yyyy HH:mm' }}
-                </div>
-                <ul class="mb-0 mt-1 small">
-                  @for (item of order.items; track item.id) {
-                    <li>
-                      {{ item.quantity }} × {{ item.product.name }} ({{ item.unitPrice }} DH/u)
-                    </li>
-                  }
-                </ul>
+        <div class="pending-order">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <span class="fw-semibold">
+                @if (order.customer) {
+                  {{ order.customer.firstName }} {{ order.customer.lastName }} ({{
+                    order.customer.phone
+                  }})
+                }
+              </span>
+              <span class="pill-tag source ms-2">{{ order.source }}</span>
+              <div class="text-muted small mt-1">
+                {{ order.saleDate | date: 'dd/MM/yyyy HH:mm' }}
               </div>
-              <div class="text-end">
-                <div class="fw-bold mb-2">{{ order.total }} DH</div>
-                <button class="btn btn-sm btn-success me-2" (click)="confirmOrder(order.id)">
-                  ✓ Confirmer
-                </button>
-                <button class="btn btn-sm btn-outline-danger" (click)="cancelOrder(order.id)">
-                  ✕ Annuler
-                </button>
-              </div>
+              <ul class="order-items mb-0 mt-1">
+                @for (item of order.items; track item.id) {
+                  <li>{{ item.quantity }} × {{ item.product.name }} ({{ item.unitPrice }} DH/u)</li>
+                }
+              </ul>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold text-primary mb-2">{{ order.total }} DH</div>
+              <button class="btn btn-sm btn-success me-2" (click)="openConfirmOrderModal(order)">
+                ✓ Confirmer
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="openCancelOrderModal(order)">
+                ✕ Annuler
+              </button>
             </div>
           </div>
         </div>
@@ -42,137 +38,206 @@
     </div>
   }
 
-  <h1 class="mb-4 text-primary fw-bold">Point de vente</h1>
+  <h1 class="page-title mb-4">Point de vente</h1>
 
   <div class="row g-4">
     <!-- Colonne gauche : Ajouter au panier -->
     <div class="col-md-6">
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Ajouter un produit</h5>
+      <div class="admin-card mb-4">
+        <h5 class="card-heading mb-3">Ajouter un produit</h5>
 
-          <div class="row g-3">
-            <div class="col-8">
-              <label class="form-label">Produit</label>
-              <select class="form-select" [(ngModel)]="selectedProductId" name="product">
-                <option [ngValue]="null">-- Choisir --</option>
-                @for (p of products; track p.id) {
-                  <option [ngValue]="p.id" [disabled]="p.quantity === 0">
-                    {{ p.name }} — {{ p.price }} DH (stock: {{ p.quantity }})
-                  </option>
-                }
-              </select>
-            </div>
-            <div class="col-4">
-              <label class="form-label">Qté</label>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="selectedQuantity"
-                name="quantity"
-                min="1"
-              />
-            </div>
+        <div class="row g-3">
+          <div class="col-8">
+            <label class="form-label">Produit</label>
+            <select class="form-select" [(ngModel)]="selectedProductId" name="product">
+              <option [ngValue]="null">-- Choisir --</option>
+              @for (p of products; track p.id) {
+                <option [ngValue]="p.id" [disabled]="p.quantity === 0">
+                  {{ p.name }} — {{ p.price }} DH (stock: {{ p.quantity }})
+                </option>
+              }
+            </select>
           </div>
-
-          <button class="btn btn-primary mt-3 w-100" (click)="addToCart()">
-            + Ajouter au panier
-          </button>
+          <div class="col-4">
+            <label class="form-label">Qté</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="selectedQuantity"
+              name="quantity"
+              min="1"
+            />
+          </div>
         </div>
+
+        <button class="btn btn-primary mt-3 w-100" (click)="addToCart()">
+          + Ajouter au panier
+        </button>
       </div>
 
       <!-- Panier -->
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Panier</h5>
+      <div class="admin-card">
+        <h5 class="card-heading mb-3">Panier</h5>
 
-          @if (cart.length === 0) {
-            <p class="text-muted text-center py-3 mb-0">Panier vide.</p>
-          } @else {
-            <table class="table table-sm align-middle">
-              <thead>
+        @if (cart.length === 0) {
+          <p class="text-muted text-center py-3 mb-0">Panier vide.</p>
+        } @else {
+          <table class="admin-table sm">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Qté</th>
+                <th>Sous-total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of cart; track item.product.id) {
                 <tr>
-                  <th>Produit</th>
-                  <th>Qté</th>
-                  <th>Sous-total</th>
-                  <th></th>
+                  <td>{{ item.product.name }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.product.price * item.quantity }} DH</td>
+                  <td>
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="removeFromCart(item.product.id)"
+                    >
+                      ✕
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                @for (item of cart; track item.product.id) {
-                  <tr>
-                    <td>{{ item.product.name }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ item.product.price * item.quantity }} DH</td>
-                    <td>
-                      <button
-                        class="btn btn-sm btn-outline-danger"
-                        (click)="removeFromCart(item.product.id)"
-                      >
-                        ✕
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+              }
+            </tbody>
+          </table>
 
-            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-              <span class="fw-bold fs-5">Total : {{ cartTotal }} DH</span>
-            </div>
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-3 cart-total-row">
+            <span class="fw-bold fs-5">Total : {{ cartTotal }} DH</span>
+          </div>
 
-            <div class="mt-3">
-              <label class="form-label">Client (optionnel)</label>
-              <select class="form-select mb-3" [(ngModel)]="selectedCustomerId" name="customer">
-                <option [ngValue]="null">-- Vente sans client --</option>
-                @for (c of customers; track c.id) {
-                  <option [ngValue]="c.id">
-                    {{ c.firstName }} {{ c.lastName }} ({{ c.phone }})
-                  </option>
-                }
-              </select>
+          <div class="mt-3">
+            <label class="form-label">Client (optionnel)</label>
+            <select class="form-select mb-3" [(ngModel)]="selectedCustomerId" name="customer">
+              <option [ngValue]="null">-- Vente sans client --</option>
+              @for (c of customers; track c.id) {
+                <option [ngValue]="c.id">{{ c.firstName }} {{ c.lastName }} ({{ c.phone }})</option>
+              }
+            </select>
 
-              <button class="btn btn-success w-100" (click)="submitSale()">
-                ✓ Valider la vente
-              </button>
-            </div>
-          }
-        </div>
+            <button class="btn btn-success w-100" (click)="submitSale()">✓ Valider la vente</button>
+          </div>
+        }
       </div>
     </div>
 
     <!-- Colonne droite : Historique -->
     <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Historique des ventes</h5>
+      <div class="admin-card">
+        <h5 class="card-heading mb-3">Historique des ventes</h5>
 
-          @if (confirmedSales.length === 0) {
+        <input
+          type="text"
+          class="form-control history-search mb-3"
+          placeholder="🔍 Rechercher par client ou produit..."
+          [(ngModel)]="historySearchTerm"
+          (ngModelChange)="onHistorySearchChange()"
+          name="historySearch"
+        />
+
+        @if (confirmedSales.length === 0) {
+          @if (historySearchTerm.trim()) {
+            <p class="text-muted text-center py-3 mb-0">
+              Aucune vente ne correspond à « {{ historySearchTerm }} ».
+            </p>
+          } @else {
             <p class="text-muted text-center py-3 mb-0">Aucune vente pour le moment.</p>
           }
+        }
 
-          @for (sale of confirmedSales; track sale.id) {
-            <div class="border rounded p-3 mb-2">
-              <div class="d-flex justify-content-between">
-                <span class="fw-semibold">
-                  @if (sale.customer) {
-                    {{ sale.customer.firstName }} {{ sale.customer.lastName }}
-                  } @else {
-                    Client anonyme
-                  }
-                </span>
-                <span class="badge bg-primary">{{ sale.total }} DH</span>
-              </div>
-              <div class="text-muted small">{{ sale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</div>
-              <ul class="mb-0 mt-2 small">
-                @for (item of sale.items; track item.id) {
-                  <li>{{ item.quantity }} × {{ item.product.name }} ({{ item.unitPrice }} DH/u)</li>
+        @for (sale of paginatedSales; track sale.id) {
+          <div class="history-item">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold">
+                @if (sale.customer) {
+                  {{ sale.customer.firstName }} {{ sale.customer.lastName }}
+                } @else {
+                  Client anonyme
                 }
-              </ul>
+              </span>
+              <span class="pill-tag total">{{ sale.total }} DH</span>
             </div>
-          }
-        </div>
+            <div class="text-muted small">{{ sale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</div>
+            <ul class="order-items mb-0 mt-2">
+              @for (item of sale.items; track item.id) {
+                <li>{{ item.quantity }} × {{ item.product.name }} ({{ item.unitPrice }} DH/u)</li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (confirmedSales.length > historyPageSize) {
+          <div class="pagination-bar">
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="historyPage === 1"
+              (click)="goToHistoryPage(historyPage - 1)"
+            >
+              ‹ Précédent
+            </button>
+            <span class="pagination-label">Page {{ historyPage }} / {{ totalHistoryPages }}</span>
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="historyPage === totalHistoryPages"
+              (click)="goToHistoryPage(historyPage + 1)"
+            >
+              Suivant ›
+            </button>
+          </div>
+        }
       </div>
     </div>
   </div>
 </div>
+
+<!-- MODALE CONFIRMATION DE COMMANDE -->
+@if (confirmOrderModalOpen && orderToConfirm) {
+  <div class="modal-backdrop-custom" (click)="closeConfirmOrderModal()">
+    <div class="modal-panel confirm-panel" (click)="$event.stopPropagation()">
+      <div class="modal-body-custom text-center">
+        <div class="confirm-icon success mb-2">✓</div>
+        <h5 class="mb-2">Confirmer cette commande ?</h5>
+        <p class="text-muted mb-4">
+          Le stock sera déduit pour les {{ orderToConfirm.items.length }} article(s) de cette
+          commande. Cette action est irréversible.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <button class="btn btn-outline-secondary px-4" (click)="closeConfirmOrderModal()">
+            Annuler
+          </button>
+          <button class="btn btn-success px-4" (click)="confirmOrder()">Confirmer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODALE ANNULATION DE COMMANDE -->
+@if (cancelOrderModalOpen && orderToCancel) {
+  <div class="modal-backdrop-custom" (click)="closeCancelOrderModal()">
+    <div class="modal-panel confirm-panel" (click)="$event.stopPropagation()">
+      <div class="modal-body-custom text-center">
+        <div class="confirm-icon mb-2">⚠️</div>
+        <h5 class="mb-2">Annuler cette commande ?</h5>
+        <p class="text-muted mb-4">
+          Cette commande en attente sera marquée comme annulée. Le stock n'a pas encore été déduit,
+          donc rien à restaurer.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <button class="btn btn-outline-secondary px-4" (click)="closeCancelOrderModal()">
+            Retour
+          </button>
+          <button class="btn btn-danger px-4" (click)="cancelOrder()">Annuler la commande</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

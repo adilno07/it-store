@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Toast } from '../../services/toast';
 
 interface Customer {
   id: number;
@@ -55,6 +56,18 @@ export class SaleList implements OnInit {
   selectedProductId: number | null = null;
   selectedQuantity: number = 1;
 
+  // --- Modales de confirmation ---
+  confirmOrderModalOpen = false;
+  orderToConfirm: SaleView | null = null;
+
+  cancelOrderModalOpen = false;
+  orderToCancel: SaleView | null = null;
+
+  // --- Recherche + pagination historique ---
+  historySearchTerm: string = '';
+  historyPage = 1;
+  historyPageSize = 5;
+
   private customersUrl = 'http://localhost:8080/api/customers';
   private productsUrl = 'http://localhost:8080/api/products';
   private salesUrl = 'http://localhost:8080/api/sales';
@@ -62,6 +75,7 @@ export class SaleList implements OnInit {
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
+    private toast: Toast,
   ) {}
 
   ngOnInit() {
@@ -96,32 +110,94 @@ export class SaleList implements OnInit {
   }
 
   get confirmedSales(): SaleView[] {
-    return this.sales.filter((s) => s.status !== 'PENDING');
+    const base = this.sales.filter((s) => s.status !== 'PENDING');
+
+    const term = this.historySearchTerm.trim().toLowerCase();
+    if (!term) return base;
+
+    return base.filter((sale) => {
+      const customerName = sale.customer
+        ? `${sale.customer.firstName} ${sale.customer.lastName}`.toLowerCase()
+        : 'client anonyme';
+
+      const matchesCustomer = customerName.includes(term);
+      const matchesProduct = sale.items.some((item) =>
+        item.product.name.toLowerCase().includes(term),
+      );
+
+      return matchesCustomer || matchesProduct;
+    });
   }
 
-  confirmOrder(id: number) {
-    if (!confirm('Confirmer cette commande ? Le stock sera déduit.')) return;
+  get paginatedSales(): SaleView[] {
+    const start = (this.historyPage - 1) * this.historyPageSize;
+    return this.confirmedSales.slice(start, start + this.historyPageSize);
+  }
 
-    this.http.put<SaleView>(`${this.salesUrl}/${id}/confirm`, {}).subscribe({
+  get totalHistoryPages(): number {
+    return Math.max(1, Math.ceil(this.confirmedSales.length / this.historyPageSize));
+  }
+
+  goToHistoryPage(page: number) {
+    if (page < 1 || page > this.totalHistoryPages) return;
+    this.historyPage = page;
+  }
+
+  onHistorySearchChange() {
+    this.historyPage = 1;
+  }
+
+  // --- Confirmation de commande via modale ---
+  openConfirmOrderModal(order: SaleView) {
+    this.orderToConfirm = order;
+    this.confirmOrderModalOpen = true;
+  }
+
+  closeConfirmOrderModal() {
+    this.confirmOrderModalOpen = false;
+    this.orderToConfirm = null;
+  }
+
+  confirmOrder() {
+    if (!this.orderToConfirm) return;
+
+    this.http.put<SaleView>(`${this.salesUrl}/${this.orderToConfirm.id}/confirm`, {}).subscribe({
       next: () => {
         this.loadSales();
         this.loadProducts();
+        this.toast.success('Commande confirmée, le stock a été déduit.');
+        this.closeConfirmOrderModal();
       },
       error: (err) => {
-        alert(err.error || 'Erreur lors de la confirmation.');
+        this.toast.error(err.error || 'Erreur lors de la confirmation.');
+        this.closeConfirmOrderModal();
       },
     });
   }
 
-  cancelOrder(id: number) {
-    if (!confirm('Annuler cette commande ?')) return;
+  // --- Annulation de commande via modale ---
+  openCancelOrderModal(order: SaleView) {
+    this.orderToCancel = order;
+    this.cancelOrderModalOpen = true;
+  }
 
-    this.http.put<SaleView>(`${this.salesUrl}/${id}/cancel`, {}).subscribe({
+  closeCancelOrderModal() {
+    this.cancelOrderModalOpen = false;
+    this.orderToCancel = null;
+  }
+
+  cancelOrder() {
+    if (!this.orderToCancel) return;
+
+    this.http.put<SaleView>(`${this.salesUrl}/${this.orderToCancel.id}/cancel`, {}).subscribe({
       next: () => {
         this.loadSales();
+        this.toast.success('Commande annulée.');
+        this.closeCancelOrderModal();
       },
       error: (err) => {
-        alert(err.error || "Erreur lors de l'annulation.");
+        this.toast.error(err.error || "Erreur lors de l'annulation.");
+        this.closeCancelOrderModal();
       },
     });
   }
@@ -132,7 +208,7 @@ export class SaleList implements OnInit {
 
   addToCart() {
     if (!this.selectedProductId || this.selectedQuantity <= 0) {
-      alert('Choisissez un produit et une quantité valide.');
+      this.toast.error('Choisissez un produit et une quantité valide.');
       return;
     }
 
@@ -143,7 +219,7 @@ export class SaleList implements OnInit {
     const alreadyInCart = existing ? existing.quantity : 0;
 
     if (alreadyInCart + this.selectedQuantity > product.quantity) {
-      alert(
+      this.toast.error(
         `Stock insuffisant. Disponible : ${product.quantity}, déjà dans le panier : ${alreadyInCart}`,
       );
       return;
@@ -165,7 +241,7 @@ export class SaleList implements OnInit {
 
   submitSale() {
     if (this.cart.length === 0) {
-      alert('Le panier est vide.');
+      this.toast.error('Le panier est vide.');
       return;
     }
 
@@ -183,9 +259,10 @@ export class SaleList implements OnInit {
         this.selectedCustomerId = null;
         this.loadProducts();
         this.loadSales();
+        this.toast.success('Vente enregistrée avec succès.');
       },
       error: (err) => {
-        alert(err.error || 'Erreur lors de la création de la vente.');
+        this.toast.error(err.error || 'Erreur lors de la création de la vente.');
       },
     });
   }

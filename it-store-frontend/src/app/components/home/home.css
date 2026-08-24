@@ -207,11 +207,19 @@
   border: none;
   background: rgba(255, 255, 255, 0.9);
   color: #adb5bd;
-  font-size: 1rem;
   cursor: pointer;
   transition:
     color 0.2s,
     transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.favorite-btn svg path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
 }
 
 .favorite-btn:hover {
@@ -219,7 +227,20 @@
 }
 
 .favorite-btn.active {
-  color: #e63946;
+  color: #0d6efd;
+}
+
+.favorite-btn.active svg path {
+  fill: currentColor;
+  stroke: none;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+}
+
+.favorite-btn.active {
+  color: #0d6efd;
 }
 
 .product-body {

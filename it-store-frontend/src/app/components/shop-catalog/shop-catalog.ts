@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Cart } from '../../services/cart';
+import { Favorites } from '../../services/favorites';
 
 interface Category {
   id: number;
@@ -27,11 +28,13 @@ interface Product {
 })
 export class ShopCatalog implements OnInit {
   products: Product[] = [];
+  categories: Category[] = [];
   searchTerm: string = '';
+  activeCategoryId: number | null = null;
   baseUrl = 'http://localhost:8080';
-  favorites = new Set<number>();
 
   private apiUrl = 'http://localhost:8080/api/public/products';
+  private categoriesUrl = 'http://localhost:8080/api/public/categories';
   private searchTimeout: any;
 
   constructor(
@@ -39,14 +42,53 @@ export class ShopCatalog implements OnInit {
     private cdr: ChangeDetectorRef,
     public cart: Cart,
     private router: Router,
+    private route: ActivatedRoute,
+    public favorites: Favorites,
   ) {}
 
   ngOnInit() {
-    this.loadProducts();
+    this.loadCategories();
+
+    this.route.queryParamMap.subscribe((params) => {
+      const categoryId = params.get('categoryId');
+      this.activeCategoryId = categoryId ? Number(categoryId) : null;
+      this.fetchProducts();
+    });
   }
 
-  loadProducts() {
-    this.http.get<Product[]>(this.apiUrl).subscribe((data) => {
+  loadCategories() {
+    this.http.get<Category[]>(this.categoriesUrl).subscribe({
+      next: (data) => {
+        this.categories = data;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.categories = [];
+      },
+    });
+  }
+
+  fetchProducts() {
+    const hasSearch = this.searchTerm.trim().length > 0;
+    const hasCategory = this.activeCategoryId !== null;
+
+    if (!hasSearch && !hasCategory) {
+      this.http.get<Product[]>(this.apiUrl).subscribe((data) => {
+        this.products = data;
+        this.cdr.markForCheck();
+      });
+      return;
+    }
+
+    let params = new HttpParams();
+    if (hasSearch) {
+      params = params.set('name', this.searchTerm.trim());
+    }
+    if (hasCategory) {
+      params = params.set('categoryId', this.activeCategoryId!);
+    }
+
+    this.http.get<Product[]>(`${this.apiUrl}/search`, { params }).subscribe((data) => {
       this.products = data;
       this.cdr.markForCheck();
     });
@@ -54,18 +96,13 @@ export class ShopCatalog implements OnInit {
 
   onSearchChange() {
     clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(() => {
-      if (this.searchTerm.trim()) {
-        this.http
-          .get<Product[]>(`${this.apiUrl}/search`, { params: { name: this.searchTerm.trim() } })
-          .subscribe((data) => {
-            this.products = data;
-            this.cdr.markForCheck();
-          });
-      } else {
-        this.loadProducts();
-      }
-    }, 400);
+    this.searchTimeout = setTimeout(() => this.fetchProducts(), 400);
+  }
+
+  selectCategory(categoryId: number | null) {
+    this.router.navigate(['/shop'], {
+      queryParams: categoryId ? { categoryId } : {},
+    });
   }
 
   addToCart(product: Product) {
@@ -75,17 +112,13 @@ export class ShopCatalog implements OnInit {
     );
   }
 
-  toggleFavorite(productId: number, event: Event) {
+  toggleFavorite(productId: number, productName: string, event: Event) {
     event.stopPropagation();
-    if (this.favorites.has(productId)) {
-      this.favorites.delete(productId);
-    } else {
-      this.favorites.add(productId);
-    }
+    this.favorites.toggle(productId, productName);
   }
 
   isFavorite(productId: number): boolean {
-    return this.favorites.has(productId);
+    return this.favorites.isFavorite(productId);
   }
 
   goToCart() {

@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Cart } from '../../services/cart';
+import { Favorites } from '../../services/favorites';
 
 interface Category {
   id: number;
@@ -46,7 +47,6 @@ interface CategoryDisplay extends Category {
 export class Home implements OnInit, OnDestroy {
   categories: CategoryDisplay[] = [];
   popularProducts: Product[] = [];
-  favorites = new Set<number>();
 
   baseUrl = 'http://localhost:8080';
   private productsUrl = 'http://localhost:8080/api/public/products';
@@ -99,6 +99,7 @@ export class Home implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     public cart: Cart,
     private router: Router,
+    public favorites: Favorites,
   ) {}
 
   ngOnInit() {
@@ -178,17 +179,13 @@ export class Home implements OnInit, OnDestroy {
     );
   }
 
-  toggleFavorite(productId: number, event: Event) {
+  toggleFavorite(productId: number, productName: string, event: Event) {
     event.stopPropagation();
-    if (this.favorites.has(productId)) {
-      this.favorites.delete(productId);
-    } else {
-      this.favorites.add(productId);
-    }
+    this.favorites.toggle(productId, productName);
   }
 
   isFavorite(productId: number): boolean {
-    return this.favorites.has(productId);
+    return this.favorites.isFavorite(productId);
   }
 
   browseByCategory(categoryId: number) {

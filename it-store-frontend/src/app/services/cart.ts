@@ -1,4 +1,5 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { Toast } from './toast';
 
 export interface CartProduct {
   id: number;
@@ -17,6 +18,7 @@ export interface CartItem {
 })
 export class Cart {
   private storageKey = 'shop_cart';
+  private toast = inject(Toast);
 
   items = signal<CartItem[]>(this.loadCart());
 
@@ -41,7 +43,7 @@ export class Cart {
     const alreadyInCart = existing ? existing.quantity : 0;
 
     if (alreadyInCart + quantity > product.quantity) {
-      alert(
+      this.toast.error(
         `Stock insuffisant. Disponible : ${product.quantity}, déjà dans le panier : ${alreadyInCart}`,
       );
       return;
@@ -54,6 +56,7 @@ export class Cart {
       this.items.set([...current, { product, quantity }]);
     }
     this.saveCart();
+    this.toast.success(`${product.name} ajouté au panier`);
   }
 
   updateQuantity(productId: number, quantity: number) {
@@ -67,7 +70,7 @@ export class Cart {
     }
 
     if (quantity > item.product.quantity) {
-      alert(`Stock insuffisant. Disponible : ${item.product.quantity}`);
+      this.toast.error(`Stock insuffisant. Disponible : ${item.product.quantity}`);
       return;
     }
 

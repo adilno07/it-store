@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { Toast } from '../../services/toast';
 
 interface Category {
   id: number;
@@ -42,6 +43,7 @@ export class StockList implements OnInit {
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
+    private toast: Toast,
   ) {}
 
   ngOnInit() {
@@ -92,7 +94,7 @@ export class StockList implements OnInit {
 
   saveQuantity(product: Product) {
     if (this.editingQuantity === null || this.editingQuantity < 0) {
-      alert('La quantité doit être 0 ou plus.');
+      this.toast.error('La quantité doit être 0 ou plus.');
       return;
     }
 
@@ -109,6 +111,7 @@ export class StockList implements OnInit {
       this.loadProducts();
       this.editingId = null;
       this.editingQuantity = null;
+      this.toast.success('Stock mis à jour.');
     });
   }
 }

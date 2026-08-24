@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { Toast } from '../../services/toast';
 
 interface Customer {
   id: number;
@@ -38,11 +39,16 @@ export class CustomerList implements OnInit {
 
   editingCustomer: Customer | null = null;
 
+  // --- Modale de suppression ---
+  deleteModalOpen = false;
+  customerToDelete: Customer | null = null;
+
   private apiUrl = 'http://localhost:8080/api/customers';
 
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
+    private toast: Toast,
   ) {}
 
   ngOnInit() {
@@ -60,18 +66,21 @@ export class CustomerList implements OnInit {
     const phonePattern = /^(0[5-7][0-9]{8}|\+212[5-7][0-9]{8})$/;
 
     if (!this.newCustomer.firstName.trim() || !this.newCustomer.lastName.trim()) {
-      alert('Merci de remplir le prénom et le nom.');
+      this.toast.error('Merci de remplir le prénom et le nom.');
       return;
     }
 
     if (!phonePattern.test(this.newCustomer.phone.trim())) {
-      alert('Numéro de téléphone invalide. Format attendu : 0612345678 ou +212612345678');
+      this.toast.error(
+        'Numéro de téléphone invalide. Format attendu : 0612345678 ou +212612345678',
+      );
       return;
     }
 
     this.http.post<Customer>(this.apiUrl, this.newCustomer).subscribe(() => {
       this.loadCustomers();
       this.resetForm();
+      this.toast.success('Client créé avec succès.');
     });
   }
 
@@ -89,12 +98,14 @@ export class CustomerList implements OnInit {
     const phonePattern = /^(0[5-7][0-9]{8}|\+212[5-7][0-9]{8})$/;
 
     if (!this.editingCustomer.firstName.trim() || !this.editingCustomer.lastName.trim()) {
-      alert('Merci de remplir le prénom et le nom.');
+      this.toast.error('Merci de remplir le prénom et le nom.');
       return;
     }
 
     if (!phonePattern.test(this.editingCustomer.phone.trim())) {
-      alert('Numéro de téléphone invalide. Format attendu : 0612345678 ou +212612345678');
+      this.toast.error(
+        'Numéro de téléphone invalide. Format attendu : 0612345678 ou +212612345678',
+      );
       return;
     }
 
@@ -103,15 +114,37 @@ export class CustomerList implements OnInit {
       .subscribe(() => {
         this.loadCustomers();
         this.editingCustomer = null;
+        this.toast.success('Client modifié avec succès.');
       });
   }
 
-  deleteCustomer(id: number) {
-    if (!confirm('Supprimer ce client ?')) return;
+  // --- Suppression via modale ---
+  openDeleteModal(customer: Customer) {
+    this.customerToDelete = customer;
+    this.deleteModalOpen = true;
+  }
 
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe(() => {
-      this.loadCustomers();
-    });
+  closeDeleteModal() {
+    this.deleteModalOpen = false;
+    this.customerToDelete = null;
+  }
+
+  confirmDelete() {
+    if (!this.customerToDelete) return;
+
+    this.http
+      .delete(`${this.apiUrl}/${this.customerToDelete.id}`, { responseType: 'text' })
+      .subscribe({
+        next: () => {
+          this.loadCustomers();
+          this.toast.success('Client supprimé.');
+          this.closeDeleteModal();
+        },
+        error: (err) => {
+          this.toast.error(err.error || 'Erreur lors de la suppression du client.');
+          this.closeDeleteModal();
+        },
+      });
   }
 
   resetForm() {

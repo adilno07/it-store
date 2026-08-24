@@ -14,23 +14,37 @@ import { ShopCart } from './components/shop-cart/shop-cart';
 import { ShopCheckout } from './components/shop-checkout/shop-checkout';
 import { PublicLayout } from './components/public-layout/public-layout';
 import { Home } from './components/home/home';
+import { CustomerLogin } from './components/customer-login/customer-login';
+import { CustomerRegister } from './components/customer-register/customer-register';
+import { MyFavorites } from './components/my-favorites/my-favorites';
+import { About } from './components/about/about';
 
 export const routes: Routes = [
-  { path: 'login', component: Login },
+  { path: 'login', component: Login, data: { title: 'IT Store — Connexion' } },
 
-  // Site public — navbar + footer partagés
   {
     path: '',
     component: PublicLayout,
     children: [
-      { path: '', component: Home },
-      { path: 'shop', component: ShopCatalog },
-      { path: 'shop/cart', component: ShopCart },
-      { path: 'shop/checkout', component: ShopCheckout },
+      { path: '', component: Home, data: { title: 'IT Store — Accueil' } },
+      { path: 'shop', component: ShopCatalog, data: { title: 'IT Store — Produits' } },
+      { path: 'shop/cart', component: ShopCart, data: { title: 'IT Store — Panier' } },
+      { path: 'shop/checkout', component: ShopCheckout, data: { title: 'IT Store — Commande' } },
+      { path: 'account/login', component: CustomerLogin, data: { title: 'IT Store — Connexion' } },
+      {
+        path: 'account/register',
+        component: CustomerRegister,
+        data: { title: 'IT Store — Créer un compte' },
+      },
+      {
+        path: 'account/favorites',
+        component: MyFavorites,
+        data: { title: 'IT Store — Mes favoris' },
+      },
+      { path: 'about', component: About, data: { title: 'IT Store — À propos' } },
     ],
   },
 
-  // Back-office admin — navbar existante (sidebar)
   {
     path: 'admin',
     component: Layout,
